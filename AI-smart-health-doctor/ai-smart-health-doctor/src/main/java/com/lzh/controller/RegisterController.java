@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@RestController("/api/register")
+@RestController
 @Slf4j
-@RequestMapping
+@RequestMapping("/api/register")
 @CrossOrigin
 public class RegisterController {
     @Autowired
