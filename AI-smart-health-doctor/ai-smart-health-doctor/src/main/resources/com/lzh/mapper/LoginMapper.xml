@@ -11,7 +11,7 @@
     </update>
 
     <select id="login" resultType="User">
-        SELECT * FROM sys_user
+        SELECT id, username, password FROM sys_user
         WHERE username = #{username} AND password = #{password}
     </select>
     <select id="getProfileById" resultType="com.lzh.pojo.PatientProfile">
