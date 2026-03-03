@@ -12,4 +12,6 @@ public interface ProfileMapper {
 
     void addProfile(PatientProfile profile);
 
+    void updateProfile(PatientProfile profile);
+
 }

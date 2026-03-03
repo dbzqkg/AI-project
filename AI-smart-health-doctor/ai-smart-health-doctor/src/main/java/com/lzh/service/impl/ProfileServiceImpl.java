@@ -23,4 +23,8 @@ public class ProfileServiceImpl implements ProfileService {
     public void addProfile(PatientProfile profile) {
         profileMapper.addProfile(profile);
     }
+    @Override
+    public void updateProfile(PatientProfile profile) {
+        profileMapper.updateProfile(profile);
+    }
 }

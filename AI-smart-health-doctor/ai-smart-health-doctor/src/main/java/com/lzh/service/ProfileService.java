@@ -9,4 +9,5 @@ public interface ProfileService {
 
     void addProfile(PatientProfile profile);
 
+    void updateProfile(PatientProfile profile);
 }
