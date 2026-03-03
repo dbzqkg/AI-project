@@ -27,7 +27,7 @@ public class AuthAspect {
         String url = request.getRequestURL().toString();
         log.info("【AOP拦截】收到请求：{}", url);
 
-        if (url.contains("/login")) {
+        if (url.contains("/login") || url.contains("/register")) {
             log.info("【AOP放行】{} 是登录接口，不需要 Token", url);
             return joinPoint.proceed();
         }
