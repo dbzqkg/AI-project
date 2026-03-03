@@ -31,4 +31,14 @@ public class AiController {
         aiService.updateProfileHistory(profileId, summary);
         return Result.success(summary);
     }
+    @PostMapping("/chat")
+    public Result chat(@RequestBody Map<String, Object> params) {
+        Integer profileId = (Integer) params.get("profileId");
+        String question = (String) params.get("question");
+
+        // 调用我们刚才写的 Service 逻辑
+        String answer = aiService.chatWithHealthContext(profileId, question);
+
+        return Result.success(answer);
+    }
 }

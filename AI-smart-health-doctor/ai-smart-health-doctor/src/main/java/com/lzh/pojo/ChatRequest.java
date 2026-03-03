@@ -1,18 +1,32 @@
 package com.lzh.pojo;
 
-import lombok.Data;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Data
 public class ChatRequest {
-    private String model = "gpt-4"; // 或者你中转站支持的 5.1 模型名
+
+    private String model;
+
     private List<Map<String, String>> messages = new ArrayList<>();
-    private boolean stream = false;
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public List<Map<String, String>> getMessages() {
+        return messages;
+    }
 
     public void addMessage(String role, String content) {
-        Map<String, String> msg = new HashMap<>();
-        msg.put("role", role);
-        msg.put("content", content);
-        this.messages.add(msg);
+        Map<String, String> message = new HashMap<>();
+        message.put("role", role);
+        message.put("content", content);
+        this.messages.add(message);
     }
 }
