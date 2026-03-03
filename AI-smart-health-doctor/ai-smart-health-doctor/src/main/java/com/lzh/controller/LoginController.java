@@ -20,6 +20,11 @@ import java.util.Map;
 @Slf4j
 @RequestMapping("/api/auth")
 public class LoginController {
+    /**
+     * 登录接口
+      * @param map 包含 username 和 password 的 JSON 对象
+      * @return 登录结果，包含用户信息和 JWT token
+     */
     @Autowired
     private LoginService loginService;
 

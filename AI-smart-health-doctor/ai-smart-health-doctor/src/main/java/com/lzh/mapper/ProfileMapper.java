@@ -9,4 +9,7 @@ import java.util.List;
 public interface ProfileMapper {
     //根据登录的 User 的 id，查出他名下所有的家属档案
     List<PatientProfile> getProfilesByUserId(Integer userId);
+
+    void addProfile(PatientProfile profile);
+
 }

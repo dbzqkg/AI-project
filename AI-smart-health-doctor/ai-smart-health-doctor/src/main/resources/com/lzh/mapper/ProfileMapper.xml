@@ -8,4 +8,10 @@
     <select id="getProfilesByUserId" resultType="com.lzh.pojo.PatientProfile">
         SELECT * FROM patient_profile WHERE user_id = #{userId}
     </select>
+
+    <insert id="addProfile">
+        INSERT INTO patient_profile (user_id, name, age, gender, relation, phone, email, address)
+        VALUES (#{userId}, #{name}, #{age}, #{gender}, #{relation}, #{phone}, #{email}, #{address})
+        WHERE user_id = #{userId}
+    </insert>
 </mapper>

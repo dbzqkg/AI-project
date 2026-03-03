@@ -10,11 +10,17 @@ import java.util.List;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
+
     @Autowired
     private ProfileMapper profileMapper;
 
     @Override
     public List<PatientProfile> getProfiles(Integer userId) {
         return profileMapper.getProfilesByUserId(userId);
+    }
+
+    @Override
+    public void addProfile(PatientProfile profile) {
+        profileMapper.addProfile(profile);
     }
 }

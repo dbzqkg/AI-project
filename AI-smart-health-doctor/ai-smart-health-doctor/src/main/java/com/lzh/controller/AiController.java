@@ -25,13 +25,10 @@ public class AiController {
     public Result saveSummary(@RequestBody Map<String, Object> params) {
         Integer profileId = (Integer) params.get("profileId");
         String fullChatLog = (String) params.get("fullChatLog"); // 前端传来的整段对话
-
-        // 1. 调用 AI 生成一段精简的病情总结
+        // 调用 AI 生成一段精简的病情总结
         String summary = aiService.generateSummary(fullChatLog);
-
-        // 2. 将总结覆盖写入数据库
+        // 将总结覆盖写入数据库
         aiService.updateProfileHistory(profileId, summary);
-
         return Result.success(summary);
     }
 }

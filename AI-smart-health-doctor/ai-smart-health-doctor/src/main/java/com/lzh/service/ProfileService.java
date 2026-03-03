@@ -6,4 +6,7 @@ import java.util.List;
 
 public interface ProfileService {
     List<PatientProfile> getProfiles(Integer userId);
+
+    void addProfile(PatientProfile profile);
+
 }
