@@ -14,3 +14,8 @@ mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
+ai:
+  gpt:
+    base-url: http://110.40.189.208:3001/v1
+    api-key: ${OPENAI_API_KEY}
+    model: gpt-5.1
