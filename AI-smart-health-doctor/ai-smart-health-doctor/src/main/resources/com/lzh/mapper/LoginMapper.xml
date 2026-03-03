@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 必须指向你刚才写的 Mapper 接口 -->
+<mapper namespace="com.lzh.mapper.LoginMapper">
+
+    <!-- 1. 登录查询 -->
+    <select id="login" resultType="User">
+        SELECT * FROM sys_user
+        WHERE username = #{username} AND password = #{password}
+    </select>
+
+    <!-- 2. 查询家属档案 -->
+    <select id="getProfilesByUserId" resultType="PatientProfile">
+        SELECT * FROM patient_profile
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

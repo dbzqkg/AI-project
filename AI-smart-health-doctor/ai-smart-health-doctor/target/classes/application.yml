@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: ai-smart-health-doctor
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/campus_med
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 516630
+
+mybatis:
+  mapper-locations: classpath:com.lzh.mapper/*.xml
+  type-aliases-package: com.lzh.pojo
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
