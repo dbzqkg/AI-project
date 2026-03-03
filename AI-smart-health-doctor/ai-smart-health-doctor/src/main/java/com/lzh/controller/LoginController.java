@@ -29,8 +29,8 @@ public class LoginController {
     private LoginService loginService;
 
     @PostMapping("/login")
-    public Result login(@RequestBody Map<String, String> map) {
-        LoginInfo loginInfo = loginService.login(map.get("username"), map.get("password"));
+    public Result login(@RequestBody User user) {
+        LoginInfo loginInfo = loginService.login(user.getUsername(), user.getPassword());
         return Result.success(loginInfo);
     }
 
