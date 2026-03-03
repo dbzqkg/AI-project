@@ -38,6 +38,7 @@ public class AiController {
     /**
      * 保存并生成总结接口
      */
+
     @PostMapping("/save-summary")
     public Result saveSummary(@RequestBody Map<String, Object> params) {
         Integer profileId = (Integer) params.get("profileId");
