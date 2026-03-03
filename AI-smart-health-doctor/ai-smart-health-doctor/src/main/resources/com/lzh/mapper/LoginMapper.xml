@@ -4,10 +4,19 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.lzh.mapper.LoginMapper">
+    <update id="updateProfileHistory">
+        UPDATE patient_profile
+        SET history = #{history}
+        WHERE id = #{id} and user_id = #{userId}
+    </update>
 
     <select id="login" resultType="User">
         SELECT * FROM sys_user
         WHERE username = #{username} AND password = #{password}
+    </select>
+    <select id="getProfileById" resultType="com.lzh.pojo.PatientProfile">
+        SELECT * FROM patient_profile
+        WHERE id = #{id} and user_id = #{userId}
     </select>
 
 

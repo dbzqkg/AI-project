@@ -14,7 +14,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j
-@Component
+//@Component
 @Aspect
 public class AuthAspect {
 
