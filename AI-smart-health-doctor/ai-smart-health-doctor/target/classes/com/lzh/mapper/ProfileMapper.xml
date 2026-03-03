@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lzh.mapper.ProfileMapper">
+    <update id="updateProfile">
+        UPDATE patient_profile
+        SET
+        <if test="userId != null">
+            user_id = #{userId},
+        </if>
+        <if test="relation != null and relation != ''">
+            relation = #{relation},
+        </if>
+        <if test="realName != null and realName != ''">
+            real_name = #{realName},
+        </if>
+        <if test="gender != null and gender != ''">
+            gender = #{gender},
+        </if>
+        <if test="age != null">
+            age = #{age},
+        </if>
+        <if test="height != null">
+            height = #{height},
+        </if>
+        <if test="weight != null">
+            weight = #{weight},
+        </if>
+        <if test="medicalHistory != null and medicalHistory != ''">
+            medical_history = #{medicalHistory},
+        </if>
+        <if test="aiSummary != null and aiSummary != ''">
+            ai_summary = #{aiSummary}
+        </if>
+        WHERE
+        id = #{id}
+        and user_id = #{userId}
+        <!-- 解决所有字段都为空时SQL语法错误的问题 -->
+        <if test="userId == null and relation == null and realName == null and gender == null
+        and age == null and height == null and weight == null
+        and medicalHistory == null and aiSummary == null">
+            -- 所有字段都为空时，执行恒假条件避免更新全表
+            1 = 0
+        </if>
+    </update>
+    <select id="getProfilesByUserId" resultType="com.lzh.pojo.PatientProfile">
+        SELECT * FROM patient_profile
+        WHERE user_id = #{userId}
+    </select>
+
+    <insert id="addProfile">
+        INSERT INTO patient_profile
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">user_id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="age != null">age,</if>
+            <if test="gender != null and gender != ''">gender,</if>
+            <if test="relation != null and relation != ''">relation,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="email != null and email != ''">email,</if>
+            <if test="address != null and address != ''">address,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null">#{userId},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="age != null">#{age},</if>
+            <if test="gender != null and gender != ''">#{gender},</if>
+            <if test="relation != null and relation != ''">#{relation},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="email != null and email != ''">#{email},</if>
+            <if test="address != null and address != ''">#{address},</if>
+        </trim>
+    </insert>
+</mapper>
