@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 public class LoginInfo {
     private Integer id;
     private String username;
-    private String name;
     private String token;
 }

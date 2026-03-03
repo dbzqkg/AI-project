@@ -8,5 +8,4 @@ import java.util.List;
 
 public interface LoginService {
     LoginInfo login(String username, String password);
-    List<PatientProfile> getProfiles(Integer userId);
 }

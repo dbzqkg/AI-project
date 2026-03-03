@@ -41,9 +41,5 @@ public class LoginServiceImpl implements LoginService {
         }
         return null;
     }
-    @Override
-    public List<PatientProfile> getProfiles(Integer userId) {
-        return loginMapper.getProfilesByUserId(userId);
-    }
 
 }
