@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientProfile {
-    private Integer id;
-    private Integer userId;
+    private Integer id;//本人id
+    private Integer userId;//号主id
 
     @NotBlank(message = "关系不能为空")
     private String relation;  // 关系：本人、父亲等
