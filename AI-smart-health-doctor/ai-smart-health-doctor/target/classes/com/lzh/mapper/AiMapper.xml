@@ -6,7 +6,7 @@
 
     <update id="updateProfileHistory">
         UPDATE patient_profile
-        SET history = #{history}
-        WHERE id = #{id} and user_id = #{userId}
+        SET ai_summary = #{param2}
+        WHERE id = #{param1}
     </update>
 </mapper>

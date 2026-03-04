@@ -29,7 +29,11 @@
                 </div>
                 <div class="meta-row">{{ item.gender }} | {{ item.age }}岁</div>
               </div>
-              <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+
+              <div class="action-buttons">
+                <el-button link type="primary" :icon="Edit" @click.stop="openEditProfile(item)" alt="编辑"></el-button>
+                <el-button link type="danger" :icon="Delete" @click.stop="deleteProfile(item)" alt="删除"></el-button>
+              </div>
             </div>
           </template>
           <el-empty v-else description="暂无档案，请创建" :image-size="60"></el-empty>
@@ -72,6 +76,11 @@
         </div>
 
         <div class="chat-input-area">
+          <div class="upload-preview" v-if="uploadedImageUrl">
+             <el-image style="width: 100px; height: 100px" :src="uploadedImageUrl" fit="cover" />
+             <el-button type="danger" circle size="small" icon="Close" @click="clearImage" class="clear-img-btn"></el-button>
+          </div>
+
           <el-input
             v-model="inputMessage"
             type="textarea"
@@ -81,11 +90,23 @@
             class="custom-textarea"
             @keydown.enter.prevent="sendMessage"
           />
-          <div class="input-actions">
-            <span class="disclaimer">AI 建议仅供参考，不作为最终医疗诊��</span>
-            <el-button type="primary" class="send-btn" @click="sendMessage" :disabled="!inputMessage.trim() || isStreaming">
-              发送 <el-icon class="el-icon--right"><Position /></el-icon>
-            </el-button>
+          <div class="input-actions" style="justify-content: space-between; display: flex;">
+            <div>
+               <el-upload
+                 class="upload-demo"
+                 :show-file-list="false"
+                 :http-request="handleUpload"
+                 accept="image/*">
+                 <el-button type="primary" link :icon="Picture" :loading="isUploading">上传图片</el-button>
+               </el-upload>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="disclaimer">AI 建议仅供参考，不作为最终医疗诊断</span>
+                <el-button type="primary" class="send-btn" @click="sendMessage" :disabled="(!inputMessage.trim() && !uploadedImageUrl) || isStreaming">
+                  发送 <el-icon class="el-icon--right"><Position /></el-icon>
+                </el-button>
+            </div>
           </div>
         </div>
       </div>
@@ -140,10 +161,10 @@ import { ref, onMounted, reactive, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import request from '@/utils/request'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   FirstAidKit, Plus, SwitchButton, UserFilled, ArrowRight,
-  DocumentChecked, Position
+  DocumentChecked, Position, Edit, Delete, Picture, Close
 } from '@element-plus/icons-vue'
 import type { PatientProfile } from '@/types'
 
@@ -154,11 +175,13 @@ const router = useRouter()
 const profiles = ref<PatientProfile[]>([])
 const currentProfileId = ref<number | null>(null)
 const currentProfile = ref<PatientProfile | null>(null)
-const messages = ref<{role: string, content: string}[]>([])
+const messages = ref<{role: string, content: string, imageUrl?: string}[]>([])
 const inputMessage = ref('')
 const isStreaming = ref(false)
 const msgListRef = ref<HTMLElement | null>(null)
 const savingSummary = ref(false)
+const uploadedImageUrl = ref('')
+const isUploading = ref(false)
 
 // Profile Dialog
 const profileDialogVisible = ref(false)
@@ -173,13 +196,78 @@ const profileForm = reactive<PatientProfile>({
 
 // === Methods ===
 
+const handleUpload = async (options: any) => {
+  const file = options.file
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('name', 'UserUpload')
+  formData.append('age', '0')
+
+  isUploading.value = true
+  try {
+    const res: any = await request.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    // UploadController returns Result.success(url)
+    if (res.code === 1) {
+       uploadedImageUrl.value = res.data
+       ElMessage.success('图片上传成功')
+    }
+  } catch (e) {
+    ElMessage.error('上传失败')
+  } finally {
+    isUploading.value = false
+  }
+}
+
+const clearImage = () => {
+    uploadedImageUrl.value = ''
+}
+  const formData = new FormData()
+  // Backend UploadController expects: name, age, file
+  formData.append('file', file)
+  formData.append('name', 'UserUpload')
+  formData.append('age', '0')
+
+  isUploading.value = true
+  try {
+    const res: any = await request.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+
+    // Check if result is wrapped in Result or direct
+    // UploadController returns Result.success(url)
+    // request.ts interceptor returns res.data
+    // If successful, res.code is 1. res.data is url.
+    // Wait, request.ts: return res (the whole response body).
+    // So if code===1, uploaded url is res.data
+    if (res.code === 1) {
+       uploadedImageUrl.value = res.data
+       ElMessage.success('图片上传成功')
+    }
+  } catch (e) {
+    ElMessage.error('上传失败')
+  } finally {
+    isUploading.value = false
+  }
+}
+
+const clearImage = () => {
+    uploadedImageUrl.value = ''
+}
+
 const fetchProfiles = async () => {
   try {
     const res: any = await request.get('/api/profiles')
     if (res.code === 1) {
       profiles.value = res.data || []
+      // 只有在没有选中且列表不为空时才自动选中第一个
       if (profiles.value.length > 0 && !currentProfileId.value) {
         selectProfile(profiles.value[0])
+      } else if (profiles.value.length === 0) {
+        currentProfileId.value = null
+        currentProfile.value = null
       }
     }
   } catch (e) {
@@ -205,13 +293,49 @@ const openAddProfile = () => {
   profileDialogVisible.value = true
 }
 
+const openEditProfile = (item: PatientProfile) => {
+  isEdit.value = true
+  Object.assign(profileForm, item)
+  profileDialogVisible.value = true
+}
+
+const deleteProfile = (item: PatientProfile) => {
+    ElMessageBox.confirm(
+    `确定要删除就诊人 "${item.realName}" 的档案吗？`,
+    '警告',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(async () => {
+     try {
+         const res: any = await request.delete(`/api/profiles/${item.id}`)
+         if (res.code === 1) {
+             ElMessage.success('删���成功')
+             if (currentProfileId.value === item.id) {
+                 currentProfileId.value = null
+                 currentProfile.value = null
+             }
+             fetchProfiles()
+         }
+     } catch(e) {}
+  }).catch(() => {})
+}
+
 const submitProfile = async () => {
   if(!profileForm.realName) return ElMessage.warning('请输入姓名')
 
   try {
-    const res: any = await request.post('/api/profiles', profileForm)
+    let res: any;
+    if (isEdit.value && profileForm.id) {
+       res = await request.put(`/api/profiles/${profileForm.id}`, profileForm)
+    } else {
+       res = await request.post('/api/profiles', profileForm)
+    }
+
     if(res.code === 1) {
-      ElMessage.success('添加成功')
+      ElMessage.success(isEdit.value ? '修改成功' : '添加成功')
       profileDialogVisible.value = false
       fetchProfiles()
     }
@@ -219,6 +343,8 @@ const submitProfile = async () => {
 }
 
 const selectProfile = (item: PatientProfile) => {
+  if (currentProfileId.value === item.id) return; // Prevent reload if same
+
   currentProfileId.value = item.id!
   currentProfile.value = item
   messages.value = [] // Clear history on switch
@@ -246,11 +372,15 @@ const formatMessage = (content: string) => {
 // === Chat Logic ===
 
 const sendMessage = async () => {
-  if(!inputMessage.value.trim() || isStreaming.value || !currentProfileId.value) return
+  if((!inputMessage.value.trim() && !uploadedImageUrl.value) || isStreaming.value || !currentProfileId.value) return
 
   const userMsg = inputMessage.value
-  messages.value.push({ role: 'user', content: userMsg })
+  const imgUrl = uploadedImageUrl.value
+
+  messages.value.push({ role: 'user', content: userMsg, imageUrl: imgUrl })
+
   inputMessage.value = ''
+  uploadedImageUrl.value = ''
   scrollToBottom()
 
   isStreaming.value = true
@@ -264,8 +394,9 @@ const sendMessage = async () => {
 
     // Construct message history for context
     const contextMessages = messages.value.slice(0, aiMsgIndex).map(m => ({
-      role: m.role,
-      content: m.content
+      role: m.role === 'ai' ? 'assistant' : m.role,
+      content: m.content,
+      imageUrl: m.imageUrl
     }))
 
     const response = await fetch('http://localhost:8080/api/ai/chat/stream', {
@@ -280,29 +411,62 @@ const sendMessage = async () => {
         })
     })
 
-    if (!response.ok || !response.body) {
-         throw new Error('Chat request failed')
+    if (!response.ok) {
+         throw new Error(`Chat request failed: ${response.status} ${response.statusText}`)
+    }
+    if (!response.body) {
+         throw new Error('No response body')
     }
 
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
+    let buffer = ''
 
     while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+
+        if (done) {
+            // Flush decoder
+            // buffer += decoder.decode() // optional if stream:true was consistent but safe to do
+            // Process any remaining buffer
+            if (buffer.trim()) {
+                const lines = buffer.split('\n')
+                for (const line of lines) {
+                    if (line.trim().startsWith('data:')) {
+                        messages.value[aiMsgIndex].content += line.replace(/^data:/, '')
+                    }
+                }
+            }
+            break
+        }
 
         const chunk = decoder.decode(value, { stream: true })
-        if(chunk.includes('NOT_LOGIN')) {
+
+        if (chunk.includes('NOT_LOGIN')) {
              ElMessage.error('登录过期')
              handleLogout()
              break
         }
 
-        messages.value[aiMsgIndex].content += chunk
+        buffer += chunk
+
+        const lines = buffer.split('\n')
+        // Keep the last segment in buffer
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+            if (line.trim() === '') continue
+            if (line.startsWith('data:')) {
+                const content = line.replace(/^data:/, '')
+                messages.value[aiMsgIndex].content += content
+            }
+        }
+
         scrollToBottom()
     }
 
   } catch (error) {
+    console.error('AI Stream Error:', error)
     ElMessage.error('AI服务暂时不可用')
     messages.value[aiMsgIndex].content += '\n[连接中断]'
   } finally {
@@ -448,6 +612,16 @@ onMounted(() => {
 .arrow-icon {
   font-size: 14px;
   color: #ccc;
+}
+
+.action-buttons {
+  display: flex;
+  visibility: hidden;
+  gap: 4px;
+}
+
+.profile-item:hover .action-buttons {
+  visibility: visible;
 }
 
 .user-footer {

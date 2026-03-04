@@ -7,7 +7,7 @@
     <update id="updateProfileHistory">
         UPDATE patient_profile
         SET history = #{history}
-        WHERE id = #{id} and user_id = #{userId}
+        WHERE id = #{id}
     </update>
 
     <select id="login" resultType="User">
@@ -16,7 +16,7 @@
     </select>
     <select id="getProfileById" resultType="com.lzh.pojo.PatientProfile">
         SELECT * FROM patient_profile
-        WHERE id = #{id} and user_id = #{userId}
+        WHERE id = #{id}
     </select>
 
 

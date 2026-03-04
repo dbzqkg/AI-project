@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class ProfileServiceImpl implements ProfileService {
-
     @Autowired
     private ProfileMapper profileMapper;
 
@@ -27,4 +26,9 @@ public class ProfileServiceImpl implements ProfileService {
     public void updateProfile(PatientProfile profile) {
         profileMapper.updateProfile(profile);
     }
+    @Override
+    public void deleteProfile(Integer id, Integer userId) {
+        profileMapper.deleteProfile(id, userId);
+    }
+
 }

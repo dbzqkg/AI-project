@@ -32,7 +32,7 @@ export const useUserStore = defineStore('user', () => {
     }
 
     async function register(registerForm: User) {
-        const res: any = await request.post('/api/auth/register', registerForm)
+        const res: any = await request.post('/api/register', registerForm)
         return res.code === 1
     }
 

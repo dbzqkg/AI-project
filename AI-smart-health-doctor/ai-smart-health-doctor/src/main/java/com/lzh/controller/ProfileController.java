@@ -7,6 +7,7 @@ import com.lzh.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -72,7 +73,21 @@ public class ProfileController {
         Integer userId = (Integer) claims.get("userId");
         // 更新就诊人信息
         profile.setId(id);
+        profile.setUserId(userId); // Fixed: Set the userId so the Mapper can match the record
         profileService.updateProfile(profile);
+        return Result.success();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteProfile(
+            @PathVariable Integer id,
+            @RequestHeader("token") String token
+    ) {
+        // 解析 token 获取其中的 userId
+        Claims claims = JwtUtils.parseJwt(token);
+        Integer userId = (Integer) claims.get("userId");
+        // 删除就诊人信息
+        profileService.deleteProfile(id, userId);
         return Result.success();
     }
 }

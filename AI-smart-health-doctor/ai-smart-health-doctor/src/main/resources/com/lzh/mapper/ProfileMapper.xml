@@ -54,24 +54,20 @@
         INSERT INTO patient_profile
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">user_id,</if>
-            <if test="name != null and name != ''">name,</if>
+            <if test="realName != null and realName != ''">real_name,</if>
             <if test="age != null">age,</if>
             <if test="gender != null and gender != ''">gender,</if>
             <if test="relation != null and relation != ''">relation,</if>
-            <if test="phone != null and phone != ''">phone,</if>
-            <if test="email != null and email != ''">email,</if>
-            <if test="address != null and address != ''">address,</if>
+            <if test="medicalHistory != null and medicalHistory != ''">medical_history,</if>
         </trim>
         VALUES
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">#{userId},</if>
-            <if test="name != null and name != ''">#{name},</if>
+            <if test="realName != null and realName != ''">#{realName},</if>
             <if test="age != null">#{age},</if>
             <if test="gender != null and gender != ''">#{gender},</if>
             <if test="relation != null and relation != ''">#{relation},</if>
-            <if test="phone != null and phone != ''">#{phone},</if>
-            <if test="email != null and email != ''">#{email},</if>
-            <if test="address != null and address != ''">#{address},</if>
+            <if test="medicalHistory != null and medicalHistory != ''">#{medicalHistory},</if>
         </trim>
     </insert>
 </mapper>

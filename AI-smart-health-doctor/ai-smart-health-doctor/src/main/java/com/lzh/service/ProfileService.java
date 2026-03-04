@@ -10,4 +10,6 @@ public interface ProfileService {
     void addProfile(PatientProfile profile);
 
     void updateProfile(PatientProfile profile);
+
+    void deleteProfile(Integer id, Integer userId);
 }

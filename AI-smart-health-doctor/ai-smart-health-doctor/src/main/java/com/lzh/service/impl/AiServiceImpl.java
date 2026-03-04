@@ -46,7 +46,7 @@ public class AiServiceImpl implements AiService {
         String oldSummary = (profile != null && profile.getAiSummary() != null) ? profile.getAiSummary() : "无";
 
         String systemMsg = String.format(
-                "你是一位专业的AI健康顾问。当前患者：姓名:%s, 性别:%s, 年龄:%d。既往病史:%s。上次的总结记录:%s。\n请基于以上信息进行回答，使用纯文本。",
+                "你是一位专业的AI健康顾问。当前患者：姓名:%s, 性别:%s, 年龄:%d。既往病史:%s。上次的总结记录:%s。\n请基于以上信息进行回答。回答必须简明扼要，除非用户主动询问专业知识，否则不要解释过多医学原理。",
                 profile != null ? profile.getRealName() : "未知",
                 profile != null ? profile.getGender() : "未知",
                 profile != null ? profile.getAge() : 0,
@@ -60,7 +60,15 @@ public class AiServiceImpl implements AiService {
 
         request.addMessage("system", systemMsg);
         if (historyMessages != null) {
-            request.getMessages().addAll(historyMessages);
+            for (Map<String, String> msg : historyMessages) {
+                String role = msg.getOrDefault("role", "user");
+                String content = msg.getOrDefault("content", "");
+                // 如果前端传了 imageUrl，拼接到 content 中
+                if (msg.containsKey("imageUrl") && msg.get("imageUrl") != null && !msg.get("imageUrl").isEmpty()) {
+                    content += "\n[参考图片链接]: " + msg.get("imageUrl");
+                }
+                request.addMessage(role, content);
+            }
         }
 
         return webClient.post()
