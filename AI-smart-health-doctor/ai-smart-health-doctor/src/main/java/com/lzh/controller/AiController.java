@@ -28,7 +28,7 @@ public class AiController {
     public Flux<String> chatStream(@RequestBody Map<String, Object> params) {
         Integer profileId = (Integer) params.get("profileId");
 
-        List<Map<String, String>> messages = (List<Map<String, String>>) params.get("messages");
+        List<Map<String, Object>> messages = (List<Map<String, Object>>) params.get("messages");
 
         //流式输出，不返回Result
         return aiService.chatStreamWithHealthContext(profileId, messages);

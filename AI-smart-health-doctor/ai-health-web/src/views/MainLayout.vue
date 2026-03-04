@@ -65,6 +65,13 @@
         <div class="chat-messages" ref="msgListRef">
           <div v-for="(msg, index) in messages" :key="index" class="message-wrapper" :class="msg.role">
             <div class="message-bubble">
+              <div v-if="msg.imageUrl" style="margin-bottom: 8px;">
+                 <el-image
+                   style="width: 150px; border-radius: 8px; cursor: pointer"
+                   :src="msg.imageUrl"
+                   :preview-src-list="[msg.imageUrl]"
+                   fit="cover" />
+              </div>
               <div class="message-content" v-html="formatMessage(msg.content)"></div>
             </div>
           </div>
@@ -85,10 +92,11 @@
             v-model="inputMessage"
             type="textarea"
             :rows="3"
-            placeholder="请详细描述症状..."
+            placeholder="请详细描述症状... (支持粘贴图片)"
             resize="none"
             class="custom-textarea"
             @keydown.enter.prevent="sendMessage"
+            @paste="handlePaste"
           />
           <div class="input-actions" style="justify-content: space-between; display: flex;">
             <div>
@@ -196,66 +204,52 @@ const profileForm = reactive<PatientProfile>({
 
 // === Methods ===
 
+const performUpload = async (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('name', 'UserUpload')
+  formData.append('age', '0')
+
+  isUploading.value = true
+  try {
+    const res: any = await request.post('/upload', formData) // Content-Type header auto-set by axios
+
+    if (res.code === 1) {
+       uploadedImageUrl.value = res.data
+       ElMessage.success('图片上传成功')
+    }
+  } catch (e) {
+    ElMessage.error('上传失败')
+  } finally {
+    isUploading.value = false
+  }
+}
+
 const handleUpload = async (options: any) => {
-  const file = options.file
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('name', 'UserUpload')
-  formData.append('age', '0')
+  await performUpload(options.file)
+}
 
-  isUploading.value = true
-  try {
-    const res: any = await request.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+const handlePaste = async (event: ClipboardEvent) => {
+  const items = event.clipboardData?.items
+  if (!items) return
 
-    // UploadController returns Result.success(url)
-    if (res.code === 1) {
-       uploadedImageUrl.value = res.data
-       ElMessage.success('图片上传成功')
+  for (const item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile()
+      if (file) {
+        // We found an image, consume the event to prevent pasting the filename or binary data as text
+        event.preventDefault()
+        await performUpload(file)
+        return
+      }
     }
-  } catch (e) {
-    ElMessage.error('上传失败')
-  } finally {
-    isUploading.value = false
   }
 }
 
 const clearImage = () => {
     uploadedImageUrl.value = ''
 }
-  const formData = new FormData()
-  // Backend UploadController expects: name, age, file
-  formData.append('file', file)
-  formData.append('name', 'UserUpload')
-  formData.append('age', '0')
 
-  isUploading.value = true
-  try {
-    const res: any = await request.post('/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-
-    // Check if result is wrapped in Result or direct
-    // UploadController returns Result.success(url)
-    // request.ts interceptor returns res.data
-    // If successful, res.code is 1. res.data is url.
-    // Wait, request.ts: return res (the whole response body).
-    // So if code===1, uploaded url is res.data
-    if (res.code === 1) {
-       uploadedImageUrl.value = res.data
-       ElMessage.success('图片上传成功')
-    }
-  } catch (e) {
-    ElMessage.error('上传失败')
-  } finally {
-    isUploading.value = false
-  }
-}
-
-const clearImage = () => {
-    uploadedImageUrl.value = ''
-}
 
 const fetchProfiles = async () => {
   try {
@@ -277,6 +271,7 @@ const fetchProfiles = async () => {
 
 const handleLogout = () => {
   userStore.logout()
+  uploadedImageUrl.value = ''
   router.push('/login')
 }
 
@@ -312,7 +307,7 @@ const deleteProfile = (item: PatientProfile) => {
      try {
          const res: any = await request.delete(`/api/profiles/${item.id}`)
          if (res.code === 1) {
-             ElMessage.success('删���成功')
+             ElMessage.success('删除成功')
              if (currentProfileId.value === item.id) {
                  currentProfileId.value = null
                  currentProfile.value = null
@@ -348,6 +343,8 @@ const selectProfile = (item: PatientProfile) => {
   currentProfileId.value = item.id!
   currentProfile.value = item
   messages.value = [] // Clear history on switch
+  uploadedImageUrl.value = '' // Clear uploaded image
+  inputMessage.value = '' // Clear input draft
 
   // Add initial AI greeting
   let greeting = `您好，我是您的AI医疗助手。`

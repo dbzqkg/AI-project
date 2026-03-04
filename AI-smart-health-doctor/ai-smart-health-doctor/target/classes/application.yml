@@ -22,5 +22,11 @@ ai:
   gpt:
     base-url: http://110.40.189.208:3001/v1
     api-key: ${OPENAI_API_KEY}
-    model: gpt-5-nano
-
+    model: gpt-5-mini
+aliyun:
+  oss:
+    endpoint: https://oss-cn-beijing.aliyuncs.com
+    bucketName: web-lzh-ai
+    region: cn-beijing
+    accessKeyId: ${OSS_ACCESS_KEY_ID:LTAIxxxxxxxxxxxx} # 请替换为您的 AccessKeyId
+    accessKeySecret: ${OSS_ACCESS_KEY_SECRET:xxxxxxxxxxxxxxxxxxxx} # 请替换为您的 AccessKeySecret

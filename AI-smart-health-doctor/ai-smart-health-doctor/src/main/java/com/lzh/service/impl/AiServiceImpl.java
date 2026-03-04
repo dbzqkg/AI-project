@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,12 +43,12 @@ public class AiServiceImpl implements AiService {
     private final WebClient webClient = WebClient.create();
 
     @Override
-    public Flux<String> chatStreamWithHealthContext(Integer profileId, List<Map<String, String>> historyMessages) {
+    public Flux<String> chatStreamWithHealthContext(Integer profileId, List<Map<String, Object>> historyMessages) {
         PatientProfile profile = loginMapper.getProfileById(profileId);
         String oldSummary = (profile != null && profile.getAiSummary() != null) ? profile.getAiSummary() : "无";
 
         String systemMsg = String.format(
-                "你是一位专业的AI健康顾问。当前患者：姓名:%s, 性别:%s, 年龄:%d。既往病史:%s。上次的总结记录:%s。\n请基于以上信息进行回答。回答必须简明扼要，除非用户主动询问专业知识，否则不要解释过多医学原理。",
+                "你是一位亲切的AI健康顾问。当前患者：姓名:%s, 性别:%s, 年龄:%d。既往病史:%s。上次的总结记录:%s。\n请基于以上信息进行回答。要求：\n1. 语言自然温暖，像朋友一样。\n2. **回答必须极为简明扼要，只保留关键信息，不要罗列长篇大论。**\n3. 除非用户主动询问，否则不要解释医学原理。\n4. 若用户已提供具体症状，直接针对症状给出简短建议。",
                 profile != null ? profile.getRealName() : "未知",
                 profile != null ? profile.getGender() : "未知",
                 profile != null ? profile.getAge() : 0,
@@ -60,14 +62,31 @@ public class AiServiceImpl implements AiService {
 
         request.addMessage("system", systemMsg);
         if (historyMessages != null) {
-            for (Map<String, String> msg : historyMessages) {
-                String role = msg.getOrDefault("role", "user");
-                String content = msg.getOrDefault("content", "");
-                // 如果前端传了 imageUrl，拼接到 content 中
-                if (msg.containsKey("imageUrl") && msg.get("imageUrl") != null && !msg.get("imageUrl").isEmpty()) {
-                    content += "\n[参考图片链接]: " + msg.get("imageUrl");
+            for (Map<String, Object> msg : historyMessages) {
+                String role = (String) msg.getOrDefault("role", "user");
+                String content = (String) msg.getOrDefault("content", "");
+                String imageUrl = (String) msg.get("imageUrl");
+
+                // 如果前端传了 imageUrl，构建多模态消息(vision capability)
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    List<Map<String, Object>> contentList = new ArrayList<>();
+
+                    Map<String, Object> textPart = new HashMap<>();
+                    textPart.put("type", "text");
+                    textPart.put("text", content);
+                    contentList.add(textPart);
+
+                    Map<String, Object> imagePart = new HashMap<>();
+                    imagePart.put("type", "image_url");
+                    Map<String, String> urlMap = new HashMap<>();
+                    urlMap.put("url", imageUrl);
+                    imagePart.put("image_url", urlMap);
+                    contentList.add(imagePart);
+
+                    request.addMessage(role, contentList);
+                } else {
+                    request.addMessage(role, content);
                 }
-                request.addMessage(role, content);
             }
         }
 
@@ -113,7 +132,7 @@ public class AiServiceImpl implements AiService {
         ChatRequest request = new ChatRequest();
         request.setModel(model);
         request.setStream(false);
-        request.addMessage("system", "你是一个医疗总结助手。请总结以下对话，提取患者症状和医生建议。纯文字输出，简明扼要。");
+        request.addMessage("system", "你是一个医疗总结助手。请总结以下对话。\n要求：\n1. 提取患者的核心不适症状。\n2. 提取医生的关键建议（如用药、就医）。\n3. **严禁添加你自己的推断或猜测**。如果患者描述了具体症状，就只记录这些症状，不要扩展成“可能患有...”。\n4. 字数控制在100字以内。");
         request.addMessage("user", fullChatLog);
 
         try {

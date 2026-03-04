@@ -13,5 +13,5 @@ public interface AiService {
     void updateProfileHistory(Integer profileId, String summary);
 
     // 【新增】流式聊天 (接收历史记录数组)
-    Flux<String> chatStreamWithHealthContext(Integer profileId, List<Map<String, String>> historyMessages);
+    Flux<String> chatStreamWithHealthContext(Integer profileId, List<Map<String, Object>> historyMessages);
 }
